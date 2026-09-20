@@ -10,12 +10,31 @@ import SwiftUI
 struct ContentView: View {
     @State private var board = Array(1...15) + [0]
     @State private var moves = 0
+    @State private var gameNumber = 0
+    @State private var won = false
+    @AppStorage("bestScore") private var bestScore = 0
     
     var body: some View {
         VStack(spacing: 20) {
             HStack {
-                Text("Moves: \(moves)")
+                VStack {
+                    Text("GAME")
+                    Text("\(gameNumber)")
+                }
                 Spacer()
+                
+                VStack {
+                    Text("MOVES")
+                    Text("\(moves)")
+                }
+                Spacer()
+                
+                VStack {
+                    Text("BEST")
+                    Text("\(bestScore)")
+                }
+                Spacer()
+                
                 Button("New Game") {
                     newGame()
                 }
@@ -58,14 +77,20 @@ struct ContentView: View {
         let distance = abs(row - emptyRow) + abs(column - emptyColumn)
         guard distance == 1 else { return }
         
-        withAnimation(.easeOut(duration: 0.12)) {
+        withAnimation(.easeOut(duration: 0.15)) {
             board.swapAt(index, empty)
         }
         
         moves += 1
+        didWin()
     }
     
     private func newGame() {
+        
+        gameNumber += 1
+        moves = 0
+        won = false
+        
         repeat {
             board = Array(1...15) + [0]
             board.shuffle()
@@ -89,6 +114,15 @@ struct ContentView: View {
         let emptyRowFromBottom = 4 - (emptyIndex / 4)
         
         return (inversions + emptyRowFromBottom) % 2 == 1
+    }
+    
+    private func didWin() {
+        if board == Array(1...15) + [0] {
+            won = true
+            if bestScore == 0 || moves < bestScore {
+                bestScore = moves
+            }
+        }
     }
 }
 
